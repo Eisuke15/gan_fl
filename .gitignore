@@ -127,3 +127,18 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#data
+data/*
+
+#noniid filters
+noniid_filter/*
+
+# images
+images/*
+
+# nets
+nets/*
+
+#gitkeep
+!.gitkeep
