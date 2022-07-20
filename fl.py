@@ -11,7 +11,6 @@ from torchvision.datasets import MNIST
 from torchvision.utils import save_image
 from tqdm import tqdm, trange
 
-from common import data_root, device
 from gan import Discriminator, Generator
 
 parser = ArgumentParser()
@@ -24,7 +23,7 @@ args = parser.parse_args()
 
 n_node = args.nnodes
 
-device = device(args.gpu_num)
+device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else "cpu")
 print(device)
 
 transform = transforms.Compose([
@@ -33,7 +32,7 @@ transform = transforms.Compose([
 
 indices=torch.load('./noniid_filter/filter_r90_s01.pt')
 
-dataset_train = MNIST(root=data_root, train=True, download=True, transform=transform)
+dataset_train = MNIST(root='data', train=True, download=True, transform=transform)
 subsets = [Subset(dataset_train, indices[i]) for i in range(n_node)]
 train_loaders = [DataLoader(subset, batch_size=256, shuffle=True, num_workers=2) for subset in subsets]
 
