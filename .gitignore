@@ -140,5 +140,7 @@ images/*
 # nets
 nets/*
 
+contact_pattern/*
+
 #gitkeep
 !.gitkeep
