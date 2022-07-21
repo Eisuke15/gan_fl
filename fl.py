@@ -17,11 +17,10 @@ parser = ArgumentParser()
 parser.add_argument('-e', '--nepoch', type=int, help="number of epochs to train for", default=1000)
 parser.add_argument('-p', '--pre-nepoch', type=int, help='number of epochs of pre-self train', default=100)
 parser.add_argument('-z', '--nz', type=int, help='size of the latent z vector', default=20)
-parser.add_argument('--nnodes', type=int, help='number of nodes (number of labels)', default=10)
 parser.add_argument('-g', '--gpu-num', type=int, help='what gpu to use', default=0)
 args = parser.parse_args()
 
-n_node = args.nnodes
+n_node = 10
 
 device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -167,7 +166,7 @@ for epoch in range(args.nepoch + 1):
             D_G_z2_seq.append(D_G_z2)
             g_optimizer.step()
 
-        print(f'[{epoch}/{args.nepoch}] node: {node_num} [{i}/{len(dataloader)}] Loss_D: {np.mean(errDs):.4f} Loss_G: {np.mean(errGs):.4f} D(x): {np.mean(D_x_seq):.4f} D(G(z)): {np.mean(D_G_z1_seq):.4f} / {np.mean(D_G_z2_seq):.4f}')
+        print(f'[{epoch}/{args.nepoch}] node: {node_num} Loss_D: {np.mean(errDs):.4f} Loss_G: {np.mean(errGs):.4f} D(x): {np.mean(D_x_seq):.4f} D(G(z)): {np.mean(D_G_z1_seq):.4f} / {np.mean(D_G_z2_seq):.4f}')
 
         if epoch%10 == 9:
             torch.save(g.state_dict(), f'nets/e{epoch}_z{args.nz}_n{node_num}_generator.pth')
