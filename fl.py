@@ -91,14 +91,11 @@ for epoch in trange(args.pre_nepoch, desc="pre-self training epoch"):
             D_G_z2 = torch.where(output > 0.5, 1., 0.).mean().item()
             g_optimizer.step()
 
-        if epoch == args.pre_nepoch - 1:
-            save_image(g(fixed_noise), f'images/first_z{args.nz}_n{node_num}.png')
-
 
 global_generator = Generator(args.nz).to(device).state_dict()
 global_discriminator = Discriminator(args.nz).to(device).state_dict()
 
-for epoch in range(args.nepoch):
+for epoch in range(args.nepoch + 1):
     new_global_generator = global_generator.copy()
     new_global_discriminator = global_discriminator.copy()
 
@@ -177,5 +174,4 @@ for epoch in range(args.nepoch):
     if epoch%10 == 9:
         gen = Generator(args.nz).to(device)
         gen.load_state_dict(global_generator)
-        save_image(gen(fixed_noise), f'images/e{epoch}_z{args.nz}_global.png')
-
+        save_image(gen(fixed_noise), f'images/fl/e{epoch}_z{args.nz}_global.png')
