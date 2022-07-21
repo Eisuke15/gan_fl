@@ -106,8 +106,9 @@ for epoch in trange(args.pre_nepoch, desc="pre-self training epoch"):
 global_generator = Generator(args.nz).to(device).state_dict()
 global_discriminator = Discriminator(args.nz).to(device).state_dict()
 
-for epoch in range(args.nepoch):
+for epoch in range(args.nepoch + 1):
     contact = contact_list[epoch]
+    print(contact)
 
     # store updated parameters here
     updated_generators = [g.state_dict() for g in generators]
