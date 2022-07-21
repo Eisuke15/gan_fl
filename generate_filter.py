@@ -7,8 +7,6 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
-from common import mkdir_if_not_exists
-
 parser = ArgumentParser()
 parser.add_argument('--bs', type=int, help="calculation batch size", default=32)
 parser.add_argument('--seed', type=int, help='random seed', default=1)
@@ -18,7 +16,7 @@ args = parser.parse_args()
 
 random.seed(args.seed)
 
-dir = mkdir_if_not_exists('./noniid_filter')
+dir = './noniid_filter'
 filename=os.path.join(dir, f'filter_r{args.ratio:02d}_s{args.seed:02d}.pt')
 print(f'Generating NonIID filter ... {filename}')
 
