@@ -90,6 +90,9 @@ for epoch in trange(args.pre_nepoch, desc="pre-self training epoch"):
             errG.backward()
             D_G_z2 = torch.where(output > 0.5, 1., 0.).mean().item()
             g_optimizer.step()
+    
+        if epoch == args.pre_nepoch - 1:
+            save_image(g(fixed_noise), f'images/fl/first_z{args.nz}_n{node_num}.png')
 
 
 global_generator = Generator(args.nz).to(device).state_dict()
