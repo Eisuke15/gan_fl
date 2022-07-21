@@ -43,19 +43,19 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
 
         self.layer1 = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=4, stride=2, padding=1),  # 32, 14, 14
+            nn.Conv2d(1, 64, kernel_size=4, stride=2, padding=1),  # 64, 14, 14
             nn.LeakyReLU(0.1, inplace=True))
 
         self.layer2 = nn.Sequential(
-            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1), # 64, 7, 7
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1), #128, 7, 7
             nn.LeakyReLU(0.1, inplace=True))
 
         self.layer3 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1), # 128, 4, 4
+            nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1), # 256, 4, 4
             nn.LeakyReLU(0.1, inplace=True))
 
         self.last = nn.Sequential(
-            nn.Conv2d(128, 1, kernel_size=4, stride=1), # 1, 1, 1
+            nn.Conv2d(256, 1, kernel_size=4, stride=1), # 1, 1, 1
         )
 
     def forward(self, x):
