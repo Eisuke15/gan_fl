@@ -188,7 +188,7 @@ for epoch in range(args.nepoch + 1):
                 D_G_z2_seq.append(D_G_z2)
                 g_optimizer.step()
 
-            print(f'[{epoch}/{args.nepoch}] node: {node_num} [{i}/{len(dataloader)}] Loss_D: {np.mean(errDs):.4f} Loss_G: {np.mean(errGs):.4f} D(x): {np.mean(D_x_seq):.4f} D(G(z)): {np.mean(D_G_z1_seq):.4f} / {np.mean(D_G_z2_seq):.4f}')
+            print(f'[{epoch}/{args.nepoch}] node: {node_num} Loss_D: {np.mean(errDs):.4f} Loss_G: {np.mean(errGs):.4f} D(x): {np.mean(D_x_seq):.4f} D(G(z)): {np.mean(D_G_z1_seq):.4f} / {np.mean(D_G_z2_seq):.4f}')
 
         if epoch%10 == 0:
             torch.save(g.state_dict(), f'nets/e{epoch}_z{args.nz}_n{node_num}_generator.pth')
