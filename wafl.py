@@ -20,7 +20,7 @@ parser.add_argument('-p', '--pre-nepoch', type=int, help='number of epochs of pr
 parser.add_argument('-z', '--nz', type=int, help='size of the latent z vector', default=20)
 parser.add_argument('--nnodes', type=int, help='number of nodes (number of labels)', default=10)
 parser.add_argument('-g', '--gpu-num', type=int, help='what gpu to use', default=0)
-parser.add_argument('--aggregation', choices=[1, 2], type=int, help="aggregation method", default=1)
+parser.add_argument('-a', '--aggregation', choices=[1, 2], type=int, help="aggregation method", default=1)
 args = parser.parse_args()
 
 n_node = args.nnodes
@@ -48,8 +48,14 @@ train_loaders = [DataLoader(subset, batch_size=256, shuffle=True, num_workers=2)
 generators = [Generator(args.nz).to(device) for _ in range(n_node)]
 discriminators = [Discriminator(args.nz).to(device) for _ in range(n_node)]
 
-g_optimizers = [Adam(net.parameters(), lr=0.0001, betas=(0.0, 0.9)) for net in generators]
-d_optimizers = [Adam(net.parameters(), lr=0.0004, betas=(0.0, 0.9)) for net in discriminators]
+if args.aggregation == 1:
+    lr_g = 0.0001
+    lr_d = 0.0004
+else:
+    lr_g = 0.0001 / 2
+    lr_d = 0.0004 / 2
+g_optimizers = [Adam(net.parameters(), lr=lr_g, betas=(0.0, 0.9)) for net in generators]
+d_optimizers = [Adam(net.parameters(), lr=lr_d, betas=(0.0, 0.9)) for net in discriminators]
 
 criterion = BCEWithLogitsLoss()
 
@@ -57,12 +63,10 @@ fixed_noise = torch.randn(64, args.nz, 1, 1, device=device)
 
 # pre-self training
 # train local model just by using the local data
-for g, d in zip(generators, discriminators):
-    g.train()
-    d.train()
-
 for epoch in trange(args.pre_nepoch, desc="pre-self training epoch"):
     for node_num, (g, d, g_optimizer, d_optimizer, dataloader) in tqdm(enumerate(zip(generators, discriminators, g_optimizers, d_optimizers, train_loaders)), leave=False, total=n_node, desc="node"):
+        g.train()
+        d.train()
         for images, _ in tqdm(dataloader, leave=False, desc="batch"):
             ############################
             # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
@@ -100,8 +104,9 @@ for epoch in trange(args.pre_nepoch, desc="pre-self training epoch"):
             D_G_z2 = torch.where(output > 0.5, 1., 0.).mean().item()
             g_optimizer.step()
 
-        if epoch == args.pre_nepoch - 1:
-            save_image(g(fixed_noise), f'images/wafl/first_a{args.aggregation}_z{args.nz}_n{node_num}.png')
+        if epoch%10 == 0 or epoch == args.pre_nepoch - 1:
+            g.eval()
+            save_image(g(fixed_noise), f'images/wafl/pre_a{args.aggregation}_e{epoch}_z{args.nz}_n{node_num}.png')
 
 
 global_generator = Generator(args.nz).to(device).state_dict()
@@ -122,20 +127,11 @@ for epoch in range(args.nepoch + 1):
     # exchange models
     for i, (g, d, updated_g, updated_d) in enumerate(zip(local_generators, local_discriminators, updated_generators, updated_discriminators)):
         neighbors = contact[str(i)]
-        # Aggregation 1
-        if args.aggregation == 1:
-            if neighbors:
-                for key in g:
-                    updated_g[key] = sum([local_generators[neighbor][key] for neighbor in neighbors] + [g[key]])/(len(neighbors)+ 1)
-                for key in d:
-                    updated_d[key] = sum([local_discriminators[neighbor][key] for neighbor in neighbors] + [d[key]])/(len(neighbors)+ 1)
-        # Aggregation 2
-        elif args.aggregation == 2:
-            for neighbor in neighbors:
-                for key in g:
-                    updated_g[key] = updated_g[key] + (local_generators[neighbor][key] - g[key]) / n_node
-                for key in d:
-                    updated_d[key] = updated_d[key] + (local_discriminators[neighbor][key] - d[key]) / n_node
+        if neighbors:
+            for key in g:
+                updated_g[key] = sum([local_generators[neighbor][key] for neighbor in neighbors] + [g[key]])/(len(neighbors)+ 1)
+            for key in d:
+                updated_d[key] = sum([local_discriminators[neighbor][key] for neighbor in neighbors] + [d[key]])/(len(neighbors)+ 1)
 
     for node_num, (g, d, updated_g, updated_d, g_optimizer, d_optimizer, dataloader) in enumerate(zip(generators, discriminators, updated_generators, updated_discriminators, g_optimizers, d_optimizers, train_loaders)):
         
@@ -144,12 +140,14 @@ for epoch in range(args.nepoch + 1):
         d.load_state_dict(updated_d)
 
         if epoch%10 == 0:
-            save_image(g(fixed_noise), f'images/wafl/e{epoch}_z{args.nz}_n{node_num}_before.png')
+            g.eval()
+            save_image(g(fixed_noise), f'images/wafl/a{args.aggregation}_e{epoch}_z{args.nz}_n{node_num}_before.png')
+
+        g.train()
+        d.train()
 
         # skip train when no neighbor
         if contact[str(node_num)]:
-            
-
             errDs = []
             errGs = []
             D_x_seq = []
@@ -201,4 +199,5 @@ for epoch in range(args.nepoch + 1):
             print(f'[{epoch}/{args.nepoch}] node: {node_num} Loss_D: {np.mean(errDs):.4f} Loss_G: {np.mean(errGs):.4f} D(x): {np.mean(D_x_seq):.4f} D(G(z)): {np.mean(D_G_z1_seq):.4f} / {np.mean(D_G_z2_seq):.4f}')
 
         if epoch%10 == 0:
+            g.eval()
             save_image(g(fixed_noise), f'images/wafl/a{args.aggregation}_e{epoch}_z{args.nz}_n{node_num}_after.png')

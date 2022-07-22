@@ -47,12 +47,10 @@ fixed_noise = torch.randn(64, args.nz, 1, 1, device=device)
 
 # pre-self training
 # train local model just by using the local data
-for g, d in zip(generators, discriminators):
-    g.train()
-    d.train()
-
 for epoch in trange(args.pre_nepoch, desc="pre-self training epoch"):
     for node_num, (g, d, g_optimizer, d_optimizer, dataloader) in tqdm(enumerate(zip(generators, discriminators, g_optimizers, d_optimizers, train_loaders)), leave=False, total=n_node, desc="node"):
+        g.train()
+        d.train()
         for images, _ in tqdm(dataloader, leave=False, desc="batch"):
             ############################
             # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
@@ -91,6 +89,7 @@ for epoch in trange(args.pre_nepoch, desc="pre-self training epoch"):
             g_optimizer.step()
     
         if epoch == args.pre_nepoch - 1:
+            g.eval()
             save_image(g(fixed_noise), f'images/fl/first_z{args.nz}_n{node_num}.png')
 
 
@@ -117,6 +116,8 @@ for epoch in range(args.nepoch + 1):
 
         g.load_state_dict(global_generator)
         d.load_state_dict(global_discriminator)
+        g.train()
+        d.train()
 
         errDs = []
         errGs = []
@@ -171,9 +172,11 @@ for epoch in range(args.nepoch + 1):
         if epoch%10 == 0:
             torch.save(g.state_dict(), f'nets/fl/e{epoch}_z{args.nz}_n{node_num}_generator.pth')
             torch.save(d.state_dict(), f'nets/fl/e{epoch}_z{args.nz}_n{node_num}_discriminator.pth')
+            g.eval()
             save_image(g(fixed_noise), f'images/fl/e{epoch}_z{args.nz}_n{node_num}.png')
     
     if epoch%10 == 0:
         gen = Generator(args.nz).to(device)
         gen.load_state_dict(global_generator)
+        gen.eval()
         save_image(gen(fixed_noise), f'images/fl/e{epoch}_z{args.nz}_global.png')
