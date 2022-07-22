@@ -135,6 +135,7 @@ data/*
 noniid_filter/*
 
 # images
+images/central/*
 images/fl/*
 images/wafl/*
 
