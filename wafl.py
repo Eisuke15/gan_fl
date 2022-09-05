@@ -18,12 +18,11 @@ parser = ArgumentParser()
 parser.add_argument('-e', '--nepoch', type=int, help="number of epochs to train for", default=1000)
 parser.add_argument('-p', '--pre-nepoch', type=int, help='number of epochs of pre-self train', default=100)
 parser.add_argument('-z', '--nz', type=int, help='size of the latent z vector', default=20)
-parser.add_argument('--nnodes', type=int, help='number of nodes (number of labels)', default=10)
 parser.add_argument('-g', '--gpu-num', type=int, help='what gpu to use', default=0)
-parser.add_argument('-a', '--aggregation', choices=[1, 2], type=int, help="aggregation method", default=1)
+parser.add_argument('--glr', type=float, help="generator's learning rate", default=0.0001)
 args = parser.parse_args()
 
-n_node = args.nnodes
+n_node = 10
 
 device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -48,12 +47,9 @@ train_loaders = [DataLoader(subset, batch_size=256, shuffle=True, num_workers=2)
 generators = [Generator(args.nz).to(device) for _ in range(n_node)]
 discriminators = [Discriminator(args.nz).to(device) for _ in range(n_node)]
 
-if args.aggregation == 1:
-    lr_g = 0.0001
-    lr_d = 0.0004
-else:
-    lr_g = 0.0001 / 2
-    lr_d = 0.0004 / 2
+
+lr_g = args.glr
+lr_d = lr_g * 4
 g_optimizers = [Adam(net.parameters(), lr=lr_g, betas=(0.0, 0.9)) for net in generators]
 d_optimizers = [Adam(net.parameters(), lr=lr_d, betas=(0.0, 0.9)) for net in discriminators]
 
@@ -106,7 +102,7 @@ for epoch in trange(args.pre_nepoch, desc="pre-self training epoch"):
 
         if epoch%10 == 0 or epoch == args.pre_nepoch - 1:
             g.eval()
-            save_image(g(fixed_noise), f'images/wafl/pre_a{args.aggregation}_e{epoch}_z{args.nz}_n{node_num}.png')
+            save_image(g(fixed_noise), f'images/wafl/pre_glr{lr_g}_e{epoch}_z{args.nz}_n{node_num}.png')
 
 
 global_generator = Generator(args.nz).to(device).state_dict()
@@ -141,7 +137,7 @@ for epoch in range(args.nepoch + 1):
 
         if epoch%10 == 0:
             g.eval()
-            save_image(g(fixed_noise), f'images/wafl/a{args.aggregation}_e{epoch}_z{args.nz}_n{node_num}_before.png')
+            save_image(g(fixed_noise), f'images/wafl/glr{lr_g}_e{epoch}_z{args.nz}_n{node_num}_before.png')
 
         g.train()
         d.train()
@@ -200,4 +196,4 @@ for epoch in range(args.nepoch + 1):
 
         if epoch%10 == 0:
             g.eval()
-            save_image(g(fixed_noise), f'images/wafl/a{args.aggregation}_e{epoch}_z{args.nz}_n{node_num}_after.png')
+            save_image(g(fixed_noise), f'images/wafl/glr{lr_g}_e{epoch}_z{args.nz}_n{node_num}_after.png')
