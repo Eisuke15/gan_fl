@@ -36,8 +36,8 @@ train_dataloader = DataLoader(dataset_train, batch_size=256, shuffle=True, num_w
 g = Generator(args.nz).to(device)
 d = Discriminator(args.nz).to(device)
 
-g_optimizer = Adam(g.parameters(), lr=0.0001, betas=(0.0, 0.9))
-d_optimizer = Adam(d.parameters(), lr=0.0002, betas=(0.0, 0.9))
+g_optimizer = Adam(g.parameters(), lr=0.0002, betas=(0.5, 0.999))
+d_optimizer = Adam(d.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
 criterion = BCEWithLogitsLoss()
 
