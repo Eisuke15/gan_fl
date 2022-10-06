@@ -62,12 +62,12 @@ for epoch in range(args.nepoch + 1):
         ###########################
         # train with real
         d.zero_grad()
-        real_cpu = images.to(device)
-        batch_size = real_cpu.size(0)
-        label = torch.full((batch_size,), 1, dtype=real_cpu.dtype, device=device)
-
-        output = d(real_cpu)
-        errD_real = criterion(output, label)
+        real_images = images.to(device)
+        batch_size = real_images.size(0)
+        real_label = torch.full((batch_size,), 1, dtype=real_images.dtype, device=device)
+        fake_label = torch.full((batch_size,), 0, dtype=real_images.dtype, device=device)
+        output = d(real_images)
+        errD_real = criterion(output, real_label)
         errD_real.backward()
         D_x = torch.where(output > 0.5, 1., 0.).mean().item()
         D_x_seq.append(D_x)
@@ -75,9 +75,8 @@ for epoch in range(args.nepoch + 1):
         # train with fake
         noise = torch.randn(batch_size, args.nz, 1, 1, device=device)
         fake = g(noise)
-        label.fill_(0)
         output = d(fake.detach())
-        errD_fake = criterion(output, label)
+        errD_fake = criterion(output, fake_label)
         errD_fake.backward()
         D_G_z1 = torch.where(output > 0.5, 1., 0.).mean().item()
         errD = errD_real + errD_fake
@@ -89,9 +88,8 @@ for epoch in range(args.nepoch + 1):
         # (2) Update G network: maximize log(D(G(z)))
         ###########################
         g.zero_grad()
-        label.fill_(1)  # fake labels are real for generator cost
         output = d(fake)
-        errG = criterion(output, label)
+        errG = criterion(output, real_label)
         errG.backward()
         errGs.append(errG.item())
         D_G_z2 = torch.where(output > 0.5, 1., 0.).mean().item()
