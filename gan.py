@@ -2,11 +2,11 @@ from torch import nn
 
 class Generator(nn.Module):
 
-    def __init__(self, z_dim=20):
+    def __init__(self, z_dim=20, conditional=False):
         super(Generator, self).__init__()
 
         self.layer1 = nn.Sequential(
-            nn.ConvTranspose2d(z_dim, 256, kernel_size=4, stride=1),  # 128, 4, 4
+            nn.ConvTranspose2d((z_dim + 10) if conditional else z_dim, 256, kernel_size=4, stride=1),  # 128, 4, 4
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True)
         )
@@ -39,11 +39,11 @@ class Generator(nn.Module):
 
 class Discriminator(nn.Module):
 
-    def __init__(self, z_dim=20, image_size=64):
+    def __init__(self, z_dim=20, image_size=64, conditional=False):
         super(Discriminator, self).__init__()
 
         self.layer1 = nn.Sequential(
-            nn.Conv2d(1, 64, kernel_size=4, stride=2, padding=1),  # 64, 14, 14
+            nn.Conv2d(11 if conditional else 1, 64, kernel_size=4, stride=2, padding=1),  # 64, 14, 14
             nn.LeakyReLU(0.1, inplace=True))
 
         self.layer2 = nn.Sequential(
