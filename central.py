@@ -33,8 +33,8 @@ indices=torch.load('./noniid_filter/filter_r90_s01.pt')
 dataset_train = MNIST(root='data', train=True, download=True, transform=transform)
 train_dataloader = DataLoader(dataset_train, batch_size=256, shuffle=True, num_workers=2)
 
-g = Generator(args.nz).to(device)
-d = Discriminator(args.nz).to(device)
+g = Generator(args.nz, conditional=conditional).to(device)
+d = Discriminator(args.nz, conditional=conditional).to(device)
 
 g_optimizer = Adam(g.parameters(), lr=0.0002, betas=(0.5, 0.999))
 d_optimizer = Adam(d.parameters(), lr=0.0002, betas=(0.5, 0.999))
