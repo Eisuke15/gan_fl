@@ -19,7 +19,6 @@ parser.add_argument('-e', '--nepoch', type=int, help="number of epochs to train 
 parser.add_argument('-p', '--pre-nepoch', type=int, help='number of epochs of pre-self train', default=100)
 parser.add_argument('-z', '--nz', type=int, help='size of the latent z vector', default=20)
 parser.add_argument('-g', '--gpu-num', type=int, help='what gpu to use', default=0)
-parser.add_argument('--glr', type=float, help="generator's learning rate", default=0.0001)
 args = parser.parse_args()
 
 n_node = 10
@@ -48,10 +47,10 @@ generators = [Generator(args.nz).to(device) for _ in range(n_node)]
 discriminators = [Discriminator(args.nz).to(device) for _ in range(n_node)]
 
 
-lr_g = args.glr
-lr_d = lr_g * 4
-g_optimizers = [Adam(net.parameters(), lr=lr_g, betas=(0.0, 0.9)) for net in generators]
-d_optimizers = [Adam(net.parameters(), lr=lr_d, betas=(0.0, 0.9)) for net in discriminators]
+lr_g = 0.0002
+lr_d = lr_g
+g_optimizers = [Adam(net.parameters(), lr=lr_g, betas=(0.5, 0.999)) for net in generators]
+d_optimizers = [Adam(net.parameters(), lr=lr_d, betas=(0.5, 0.999)) for net in discriminators]
 
 criterion = BCEWithLogitsLoss()
 
