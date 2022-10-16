@@ -25,11 +25,11 @@ device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else "
 
 indices=torch.load('./noniid_filter/filter_r90_s01.pt')
 
-dataset_train = MNIST(root='data', train=True, download=True, transform=transform)
+dataset_train = MNIST(root='data', train=True, download=True, transform=transforms.ToTensor())
 dataloader = DataLoader(dataset_train, batch_size=256, shuffle=True, num_workers=2)
 
 g = Generator(args.nz, conditional=conditional).to(device)
-d = Discriminator(args.nz, conditional=conditional).to(device)
+d = Discriminator(conditional=conditional).to(device)
 
 g_optimizer = Adam(g.parameters(), lr=0.0002, betas=(0.5, 0.999))
 d_optimizer = Adam(d.parameters(), lr=0.0002, betas=(0.5, 0.999))
@@ -38,7 +38,7 @@ fixed_noise = gen_fixed_noise(args.nz, device, conditional)
 
 # training
 for epoch in range(args.nepoch + 1):
-    train(dataloader, g, d, g_optimizer, d_optimizer, args.nz, epoch, args.nepoch, fixed_noise, device, conditional)
+    train(dataloader, g, d, g_optimizer, d_optimizer, args.nz, epoch, args.nepoch, device, conditional)
     if epoch%10 == 0:
         g.eval()
         save_image(g(fixed_noise), f'images/central/e{epoch}_z{args.nz}.png', nrow=10)
