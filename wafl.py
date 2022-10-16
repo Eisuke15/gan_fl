@@ -44,8 +44,8 @@ dataset_train = MNIST(root='data', train=True, download=True, transform=transfor
 subsets = [Subset(dataset_train, indices[i]) for i in range(n_node)]
 train_loaders = [DataLoader(subset, batch_size=256, shuffle=True, num_workers=2) for subset in subsets]
 
-generators = [Generator(args.nz).to(device) for _ in range(n_node)]
-discriminators = [Discriminator(args.nz).to(device) for _ in range(n_node)]
+generators = [Generator(nz, conditional).to(device) for _ in range(n_node)]
+discriminators = [Discriminator(conditional).to(device) for _ in range(n_node)]
 
 
 lr_g = 0.0002
