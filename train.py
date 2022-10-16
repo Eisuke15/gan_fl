@@ -17,7 +17,7 @@ def gen_fixed_noise(nz, device, conditional):
         device) if conditional else fixed_noise
 
 
-def train(dataloader, g, d, g_optimizer, d_optimizer, nz, epoch, n_epoch, fixed_noise, device, conditional=False):
+def train(dataloader, g, d, g_optimizer, d_optimizer, nz, epoch, n_epoch, device, conditional=False, node=None):
     g.train()
     d.train()
 
@@ -75,4 +75,7 @@ def train(dataloader, g, d, g_optimizer, d_optimizer, nz, epoch, n_epoch, fixed_
         D_G_z2_seq.append(D_G_z2)
         g_optimizer.step()
 
-    print(f'[{epoch}/{n_epoch}] Loss_D: {np.mean(errDs):.4f} Loss_G: {np.mean(errGs):.4f} D(x): {np.mean(D_x_seq):.4f} D(G(z)): {np.mean(D_G_z1_seq):.4f} / {np.mean(D_G_z2_seq):.4f}')
+    log = f'[{epoch}/{n_epoch}] Loss_D: {np.mean(errDs):.4f} Loss_G: {np.mean(errGs):.4f} D(x): {np.mean(D_x_seq):.4f} D(G(z)): {np.mean(D_G_z1_seq):.4f} / {np.mean(D_G_z2_seq):.4f}'
+    if node is not None:
+        log = f'node:{node:2d}: ' + log
+    print(log)
