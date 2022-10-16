@@ -1,9 +1,9 @@
 import numpy as np
 import torch
 from torch.nn import BCEWithLogitsLoss
-from tqdm import tqdm
 
 from concat import concat_image_label, concat_noise_label
+
 
 criterion = BCEWithLogitsLoss()
 
@@ -28,7 +28,7 @@ def train(dataloader, g, d, g_optimizer, d_optimizer, nz, epoch, n_epoch, device
     D_G_z1_seq = []
     D_G_z2_seq = []
 
-    for images, labels in tqdm(dataloader, leave=False):
+    for images, labels in dataloader:
         
         # preparations
         real_images = images.to(device)
