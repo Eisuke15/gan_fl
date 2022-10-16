@@ -27,11 +27,6 @@ n_node = 10
 device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else "cpu")
 print(device)
 
-transform = transforms.Compose([
-    transforms.ToTensor(),
-])
-
-
 filename=f'./contact_pattern/rwp_n10_a0500_r100_p10_s01.json'
 # filename=f'./contact_pattern/cse_n10_c10_b02_tt10_tp5_s01.json'
 print(f'Loading ... {filename}')
