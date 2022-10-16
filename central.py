@@ -22,11 +22,6 @@ n_node = 10
 conditional = args.conditional
 
 device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else "cpu")
-print(device)
-
-transform = transforms.Compose([
-    transforms.ToTensor(),
-])
 
 indices=torch.load('./noniid_filter/filter_r90_s01.pt')
 
