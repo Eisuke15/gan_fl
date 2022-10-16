@@ -18,6 +18,7 @@ def gen_fixed_noise(nz, device, conditional):
 
 
 def train(dataloader, g, d, g_optimizer, d_optimizer, nz, epoch, n_epoch, device, conditional=False, node=None):
+    """train generator and discriminator with given dataloader for 1 epoch"""
     g.train()
     d.train()
 
