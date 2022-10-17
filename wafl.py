@@ -15,7 +15,7 @@ from tqdm import tqdm, trange
 from gan import Discriminator, Generator
 
 parser = ArgumentParser()
-parser.add_argument('-e', '--nepoch', type=int, help="number of epochs to train for", default=1000)
+parser.add_argument('-e', '--nepoch', type=int, help="number of epochs to train for", default=10000)
 parser.add_argument('-p', '--pre-nepoch', type=int, help='number of epochs of pre-self train', default=100)
 parser.add_argument('-z', '--nz', type=int, help='size of the latent z vector', default=20)
 parser.add_argument('-g', '--gpu-num', type=int, help='what gpu to use', default=0)
