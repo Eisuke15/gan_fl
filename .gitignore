@@ -135,7 +135,8 @@ data/*
 noniid_filter/*
 
 # images
-images/central/*
+images/central/cgan/*
+images/central/gan/*
 images/fl/cgan/*
 images/fl/gan/*
 images/wafl/cgan/*
