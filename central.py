@@ -18,8 +18,8 @@ parser.add_argument('-c', '--conditional', action="store_true", help="Conditiona
 args = parser.parse_args()
 
 n_node = 10
-nz = args.nz
 
+nz = args.nz
 conditional = args.conditional
 
 device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else "cpu")
