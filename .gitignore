@@ -136,8 +136,10 @@ noniid_filter/*
 
 # images
 images/central/*
-images/fl/*
-images/wafl/*
+images/fl/cgan/*
+images/fl/gan/*
+images/wafl/cgan/*
+images/wafl/gan/*
 
 # nets
 nets/*
