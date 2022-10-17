@@ -42,4 +42,4 @@ for epoch in range(args.nepoch + 1):
     train(dataloader, g, d, g_optimizer, d_optimizer, nz, epoch, args.nepoch, device, conditional)
     if epoch%10 == 0:
         g.eval()
-        save_image(g(fixed_noise), f'images/central/e{epoch}_z{nz}.png', nrow=10)
+        save_image(g(fixed_noise), f'images/central/{"cgan" if conditional else "gan"}/e{epoch}_z{nz}.png', nrow=10)
