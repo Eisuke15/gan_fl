@@ -152,5 +152,7 @@ nets/wafl/gan/*
 
 contact_pattern/*
 
+samples/*
+
 #gitkeep
 !.gitkeep
