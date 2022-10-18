@@ -1,8 +1,9 @@
-import random
 import math
-import numpy as np
+import random
 
-n_time=10000
+from tqdm import tqdm, trange
+
+n_time=20000
 
 n_node=10
 min_travel_speed=3
@@ -19,7 +20,7 @@ for areasize in areasize_set :
         for randomseed in randomseed_set :
             parameters.append( (areasize,pose_time,randomseed) )
 
-for areasize,pose_time,randomseed in parameters :
+for areasize,pose_time,randomseed in tqdm(parameters) :
 
     area=(areasize,areasize)
     random.seed(randomseed)
@@ -37,7 +38,7 @@ for areasize,pose_time,randomseed in parameters :
 
 
     contact_list=[]
-    for t in range(n_time) :
+    for t in trange(n_time, leave=False) :
         for i in range(n_node) :
             if node_pose_remaining_time[i] == 0 :
                 x, y = node_location[i]
@@ -80,10 +81,10 @@ for areasize,pose_time,randomseed in parameters :
                     if (xi-xj)**2+(yi-yj)**2 < radio_range **2 :
                         node_in_contact[i].append(j)
 
-        print(f't={t} : contacts={node_in_contact}')
+        # print(f't={t} : contacts={node_in_contact}')
         contact_list.append(node_in_contact)
 
 
     import json
     with open(f'./contact_pattern/rwp_n{n_node:02d}_a{areasize:04d}_r{radio_range:03d}_p{pose_time:02d}_s{randomseed:02d}.json','w') as f :
-        json.dump(contact_list,f,indent=4)
+        json.dump(contact_list,f,separators=(',', ':'))
