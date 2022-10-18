@@ -44,4 +44,3 @@ for epoch in range(args.nepoch + 1):
         g.eval()
         save_image(g(fixed_noise), f'images/central/{"cgan" if conditional else "gan"}/e{epoch}_z{nz}.png', nrow=10)
         torch.save(g.state_dict(), f'nets/central/{"cgan" if conditional else "gan"}/g_e{epoch}_z{args.nz}.pth')
-        torch.save(d.state_dict(), f'nets/central/{"cgan" if conditional else "gan"}/d_e{epoch}_z{args.nz}.pth')
