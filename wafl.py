@@ -127,7 +127,7 @@ for epoch in range(args.nepoch + 1):
         g.load_state_dict(updated_g)
         d.load_state_dict(updated_d)
 
-        if epoch%10 == 0:
+        if epoch%50 == 0:
             g.eval()
             save_image(g(fixed_noise), f'images/wafl/glr{lr_g}_e{epoch}_z{args.nz}_n{node_num}_before.png')
 
