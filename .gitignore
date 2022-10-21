@@ -154,5 +154,7 @@ contact_pattern/*
 
 samples/*
 
+graphs/*
+
 #gitkeep
 !.gitkeep
