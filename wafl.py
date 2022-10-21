@@ -1,16 +1,13 @@
 import json
 from argparse import ArgumentParser
 
-import numpy as np
 import torch
-from torch.nn import BCEWithLogitsLoss
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Subset
 from torchvision import transforms
 from torchvision.datasets import MNIST
 from torchvision.utils import save_image
-from tqdm import tqdm, trange
 
 from gan import Discriminator, Generator
 
