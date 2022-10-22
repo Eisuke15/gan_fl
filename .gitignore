@@ -152,7 +152,7 @@ nets/wafl/gan/*
 
 contact_pattern/*
 
-samples/*
+tmp_*
 
 graphs/*
 
