@@ -26,7 +26,8 @@ class Generator(nn.Module):
         self.last = nn.Sequential(
             nn.ConvTranspose2d(64, 1, kernel_size=4, stride=2, padding=1),  # 1, 28, 28
             nn.Tanh())
-        # 注意：白黒画像なので出力チャネルは1つだけ
+        
+        self.apply(weights_init)
 
     def forward(self, z):
         out = self.layer1(z)
@@ -58,6 +59,8 @@ class Discriminator(nn.Module):
             nn.Conv2d(256, 1, kernel_size=4, stride=1), # 1, 1, 1
         )
 
+        self.apply(weights_init)
+
     def forward(self, x):
         out = self.layer1(x)
         out = self.layer2(out)
@@ -66,7 +69,19 @@ class Discriminator(nn.Module):
         return out.view(-1)
 
 
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        nn.init.normal_(m.weight.data, 0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        nn.init.normal_(m.weight.data, 1.0, 0.02)
+        nn.init.constant_(m.bias.data, 0)
+
+
 if __name__ == "__main__":
     from torchinfo import summary
     summary(Generator(), (256, 20, 1, 1))
     summary(Discriminator(), (256, 1, 28, 28))
+    print("")
+    summary(Generator(conditional=True), (256, 30, 1, 1))
+    summary(Discriminator(conditional=True), (256, 11, 28, 28))
