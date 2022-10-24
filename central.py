@@ -24,8 +24,6 @@ conditional = args.conditional
 
 device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else "cpu")
 
-indices=torch.load('./noniid_filter/filter_r90_s01.pt')
-
 dataset_train = MNIST(root='data', train=True, download=True, transform=transforms.ToTensor())
 dataloader = DataLoader(dataset_train, batch_size=256, shuffle=True, num_workers=2)
 
