@@ -141,6 +141,7 @@ images/fl/cgan/*
 images/fl/gan/*
 images/wafl/cgan/*
 images/wafl/gan/*
+images/self/gan/*
 
 # nets
 nets/central/cgan/*
@@ -149,6 +150,7 @@ nets/fl/cgan/*
 nets/fl/gan/*
 nets/wafl/cgan/*
 nets/wafl/gan/*
+nets/self/gan/*
 
 contact_pattern/*
 
