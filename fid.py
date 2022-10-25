@@ -24,7 +24,7 @@ parser.add_argument('-s', '--num_samples', type=int, help="number of samples use
 parser.add_argument('-c', '--conditional', action="store_true", help="Conditional GAN")
 parser.add_argument('-z', '--nz', type=int, help='size of the latent z vector', default=16)
 parser.add_argument('-e', '--epoch', type=int, help="upper limit of epoch to calculate FID", default=10000)
-parser.add_argument('method', choices=['central', 'fl', 'wafl'])
+parser.add_argument('method', choices=['central', 'fl', 'wafl', 'self'])
 args = parser.parse_args()
 
 conditional = args.conditional
