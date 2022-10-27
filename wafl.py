@@ -19,6 +19,9 @@ parser.add_argument('-g', '--gpu-num', type=int, help='what gpu to use', default
 parser.add_argument('-c', '--conditional', action="store_true", help="Conditional GAN")
 args = parser.parse_args()
 
+nz = args.nz
+conditional = args.conditional
+
 n_node = 10
 
 device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else "cpu")
