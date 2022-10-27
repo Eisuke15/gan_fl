@@ -42,6 +42,9 @@ train_loaders = [DataLoader(subset, batch_size=256, shuffle=True, num_workers=2)
 generators = [Generator(nz, conditional).to(device) for _ in range(n_node)]
 discriminators = [Discriminator(conditional).to(device) for _ in range(n_node)]
 
+lr = 0.0002
+g_optimizers = [Adam(net.parameters(), lr=lr, betas=(0.5, 0.999)) for net in generators]
+d_optimizers = [Adam(net.parameters(), lr=lr, betas=(0.5, 0.999)) for net in discriminators]
 
 lr_g = 0.0002
 lr_d = lr_g
