@@ -34,7 +34,7 @@ def fid(epochs, basedir, real_path, device, method, conditional, num_batch, batc
     G = Generator(nz, conditional=conditional).to(device)
 
     for e in epochs:
-        g_path = f'nets/{method}/{"cgan" if conditional else "gan"}/g_e{e}_z{nz}{f"_n{node}" if method == "wafl" else "" }.pth'
+        g_path = f'nets/{method}/{"cgan" if conditional else "gan"}/g_e{e}_z{nz}{f"_n{node}" if method in ["wafl", "self"] else "" }.pth'
         G.load_state_dict(torch.load(g_path))
 
         os.makedirs(fake_path)
