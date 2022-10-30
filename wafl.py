@@ -46,14 +46,7 @@ lr = 0.0002
 g_optimizers = [Adam(net.parameters(), lr=lr, betas=(0.5, 0.999)) for net in generators]
 d_optimizers = [Adam(net.parameters(), lr=lr, betas=(0.5, 0.999)) for net in discriminators]
 
-lr_g = 0.0002
-lr_d = lr_g
-g_optimizers = [Adam(net.parameters(), lr=lr_g, betas=(0.5, 0.999)) for net in generators]
-d_optimizers = [Adam(net.parameters(), lr=lr_d, betas=(0.5, 0.999)) for net in discriminators]
-
-criterion = BCEWithLogitsLoss()
-
-fixed_noise = torch.randn(64, args.nz, 1, 1, device=device)
+fixed_noise = gen_fixed_noise(args.nz, device, conditional)
 
 # pre-self training
 # train local model just by using the local data
