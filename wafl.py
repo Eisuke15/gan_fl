@@ -57,54 +57,16 @@ fixed_noise = torch.randn(64, args.nz, 1, 1, device=device)
 
 # pre-self training
 # train local model just by using the local data
-for epoch in trange(args.pre_nepoch, desc="pre-self training epoch"):
-    for node_num, (g, d, g_optimizer, d_optimizer, dataloader) in tqdm(enumerate(zip(generators, discriminators, g_optimizers, d_optimizers, train_loaders)), leave=False, total=n_node, desc="node"):
-        g.train()
-        d.train()
-        for images, _ in tqdm(dataloader, leave=False, desc="batch"):
-            ############################
-            # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
-            ###########################
-            # train with real
-            d.zero_grad()
-            real_cpu = images.to(device)
-            batch_size = real_cpu.size(0)
-            label = torch.full((batch_size,), 1, dtype=real_cpu.dtype, device=device)
-
-            output = d(real_cpu)
-            errD_real = criterion(output, label)
-            errD_real.backward()
-            D_x = torch.where(output > 0.5, 1., 0.).mean().item()
-
-            # train with fake
-            noise = torch.randn(batch_size, args.nz, 1, 1, device=device)
-            fake = g(noise)
-            label.fill_(0)
-            output = d(fake.detach())
-            errD_fake = criterion(output, label)
-            errD_fake.backward()
-            D_G_z1 = torch.where(output > 0.5, 1., 0.).mean().item()
-            errD = errD_real + errD_fake
-            d_optimizer.step()
-
-            ############################
-            # (2) Update G network: maximize log(D(G(z)))
-            ###########################
-            g.zero_grad()
-            label.fill_(1)  # fake labels are real for generator cost
-            output = d(fake)
-            errG = criterion(output, label)
-            errG.backward()
-            D_G_z2 = torch.where(output > 0.5, 1., 0.).mean().item()
-            g_optimizer.step()
-
+for epoch in range(args.pre_nepoch):
+    for node_num, (g, d, g_optimizer, d_optimizer, dataloader) in enumerate(zip(generators, discriminators, g_optimizers, d_optimizers, train_loaders)):
+        train(dataloader, g, d, g_optimizer, d_optimizer, nz, epoch, args.pre_nepoch, device, conditional, node_num)
         if epoch%10 == 0 or epoch == args.pre_nepoch - 1:
             g.eval()
             save_image(g(fixed_noise), f'images/wafl/pre_glr{lr_g}_e{epoch}_z{args.nz}_n{node_num}.png')
 
 
-global_generator = Generator(args.nz).to(device).state_dict()
-global_discriminator = Discriminator(args.nz).to(device).state_dict()
+global_generator = Generator(nz, conditional=conditional).to(device).state_dict()
+global_discriminator = Discriminator(conditional=conditional).to(device).state_dict()
 
 for epoch in range(args.nepoch + 1):
     contact = contact_list[epoch]
