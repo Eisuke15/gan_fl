@@ -19,17 +19,14 @@ parser.add_argument('-g', '--gpu-num', type=int, help='what gpu to use', default
 args = parser.parse_args()
 
 n_node = 10
+nz = args.nz
+conditional = args.conditional
 
 device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else "cpu")
-print(device)
-
-transform = transforms.Compose([
-    transforms.ToTensor(),
-])
 
 indices=torch.load('./noniid_filter/filter_r90_s01.pt')
 
-dataset_train = MNIST(root='data', train=True, download=True, transform=transform)
+dataset_train = MNIST(root='data', train=True, download=True, transform=transforms.ToTensor())
 subsets = [Subset(dataset_train, indices[i]) for i in range(n_node)]
 train_loaders = [DataLoader(subset, batch_size=256, shuffle=True, num_workers=2) for subset in subsets]
 
@@ -72,65 +69,15 @@ for epoch in range(args.nepoch + 1):
     global_generator = new_global_generator
     global_discriminator = new_global_discriminator
 
-    for node_num, (g, d, g_optimizer, d_optimizer, dataloader) in enumerate(zip(generators, discriminators, g_optimizers, d_optimizers, train_loaders)):
+    for node, (g, d, g_optimizer, d_optimizer, dataloader) in enumerate(zip(generators, discriminators, g_optimizers, d_optimizers, train_loaders)):
 
         g.load_state_dict(global_generator)
         d.load_state_dict(global_discriminator)
 
         train(dataloader, g, d, g_optimizer, d_optimizer, nz, epoch, args.nepoch, device, conditional, node)
 
-        for i, (images, _) in enumerate(dataloader):
-            ############################
-            # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
-            ###########################
-            # train with real
-            d.zero_grad()
-            real_cpu = images.to(device)
-            batch_size = real_cpu.size(0)
-            label = torch.full((batch_size,), 1, dtype=real_cpu.dtype, device=device)
-
-            output = d(real_cpu)
-            errD_real = criterion(output, label)
-            errD_real.backward()
-            D_x = torch.where(output > 0.5, 1., 0.).mean().item()
-            D_x_seq.append(D_x)
-
-            # train with fake
-            noise = torch.randn(batch_size, args.nz, 1, 1, device=device)
-            fake = g(noise)
-            label.fill_(0)
-            output = d(fake.detach())
-            errD_fake = criterion(output, label)
-            errD_fake.backward()
-            D_G_z1 = torch.where(output > 0.5, 1., 0.).mean().item()
-            errD = errD_real + errD_fake
-            errDs.append(errD.item())
-            D_G_z1_seq.append(D_G_z1)
-            d_optimizer.step()
-
-            ############################
-            # (2) Update G network: maximize log(D(G(z)))
-            ###########################
-            g.zero_grad()
-            label.fill_(1)  # fake labels are real for generator cost
-            output = d(fake)
-            errG = criterion(output, label)
-            errG.backward()
-            errGs.append(errG.item())
-            D_G_z2 = torch.where(output > 0.5, 1., 0.).mean().item()
-            D_G_z2_seq.append(D_G_z2)
-            g_optimizer.step()
-
-        print(f'[{epoch}/{args.nepoch}] node: {node_num} Loss_D: {np.mean(errDs):.4f} Loss_G: {np.mean(errGs):.4f} D(x): {np.mean(D_x_seq):.4f} D(G(z)): {np.mean(D_G_z1_seq):.4f} / {np.mean(D_G_z2_seq):.4f}')
-
-        if epoch%10 == 0:
-            torch.save(g.state_dict(), f'nets/fl/e{epoch}_z{args.nz}_n{node_num}_generator.pth')
-            torch.save(d.state_dict(), f'nets/fl/e{epoch}_z{args.nz}_n{node_num}_discriminator.pth')
-            g.eval()
-            save_image(g(fixed_noise), f'images/fl/e{epoch}_z{args.nz}_n{node_num}.png')
-    
-    if epoch%10 == 0:
-        gen = Generator(args.nz).to(device)
+    if epoch%50 == 0:
+        gen = Generator(nz, conditional=conditional).to(device)
         gen.load_state_dict(global_generator)
         gen.eval()
         save_image(gen(fixed_noise), f'images/fl/e{epoch}_z{args.nz}_global.png')
