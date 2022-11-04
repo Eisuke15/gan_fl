@@ -16,6 +16,7 @@ parser.add_argument('-e', '--nepoch', type=int, help="number of epochs to train 
 parser.add_argument('-p', '--pre-nepoch', type=int, help='number of epochs of pre-self train', default=100)
 parser.add_argument('-z', '--nz', type=int, help='size of the latent z vector', default=16)
 parser.add_argument('-g', '--gpu-num', type=int, help='what gpu to use', default=0)
+parser.add_argument('-c', '--conditional', action="store_true", help="Conditional GAN")
 args = parser.parse_args()
 
 n_node = 10
@@ -30,15 +31,14 @@ dataset_train = MNIST(root='data', train=True, download=True, transform=transfor
 subsets = [Subset(dataset_train, indices[i]) for i in range(n_node)]
 train_loaders = [DataLoader(subset, batch_size=256, shuffle=True, num_workers=2) for subset in subsets]
 
-generators = [Generator(args.nz).to(device) for _ in range(n_node)]
-discriminators = [Discriminator(args.nz).to(device) for _ in range(n_node)]
+generators = [Generator(nz, conditional=conditional).to(device) for _ in range(n_node)]
+discriminators = [Discriminator(conditional=conditional).to(device) for _ in range(n_node)]
 
-g_optimizers = [Adam(net.parameters(), lr=0.0001, betas=(0.0, 0.9)) for net in generators]
-d_optimizers = [Adam(net.parameters(), lr=0.0004, betas=(0.0, 0.9)) for net in discriminators]
+lr = 0.0002
+g_optimizers = [Adam(net.parameters(), lr=lr, betas=(0.5, 0.999)) for net in generators]
+d_optimizers = [Adam(net.parameters(), lr=lr, betas=(0.5, 0.999)) for net in discriminators]
 
-criterion = BCEWithLogitsLoss()
-
-fixed_noise = torch.randn(64, args.nz, 1, 1, device=device)
+fixed_noise = gen_fixed_noise(nz, device, conditional)
 
 # pre-self training
 # train local model just by using the local data
@@ -47,11 +47,11 @@ for epoch in range(args.pre_nepoch):
         train(dataloader, g, d, g_optimizer, d_optimizer, nz, epoch, args.pre_nepoch, device, conditional, node)
         if epoch%10 == 0 or epoch == args.pre_nepoch - 1:
             g.eval()
-            save_image(g(fixed_noise), f'images/fl/first_z{args.nz}_n{node_num}.png')
+            save_image(g(fixed_noise), f'images/fl/{"cgan" if conditional else "gan"}/ep{epoch}_z{args.nz}_n{node}.png', nrow=10)
 
 
-global_generator = Generator(args.nz).to(device).state_dict()
-global_discriminator = Discriminator(args.nz).to(device).state_dict()
+global_generator = Generator(nz, conditional=conditional).to(device).state_dict()
+global_discriminator = Discriminator(conditional=conditional).to(device).state_dict()
 
 for epoch in range(args.nepoch + 1):
     new_global_generator = global_generator.copy()
@@ -80,4 +80,5 @@ for epoch in range(args.nepoch + 1):
         gen = Generator(nz, conditional=conditional).to(device)
         gen.load_state_dict(global_generator)
         gen.eval()
-        save_image(gen(fixed_noise), f'images/fl/e{epoch}_z{args.nz}_global.png')
+        save_image(gen(fixed_noise), f'images/fl/{"cgan" if conditional else "gan"}/e{epoch}_z{nz}_global.png', nrow=10)
+        torch.save(g.state_dict(), f'nets/fl/{"cgan" if conditional else "gan"}/g_e{epoch}_z{nz}.pth')
