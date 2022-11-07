@@ -8,12 +8,11 @@ from concat import concat_image_label, concat_noise_label
 criterion = BCEWithLogitsLoss()
 
 
-def gen_fixed_noise(nz, device, conditional):
-    gen_image_num = 70
-    fixed_noise = torch.randn(gen_image_num, nz, 1, 1, device=device)
+def gen_fixed_noise(nz, device, conditional, num=70):
+    fixed_noise = torch.randn(num, nz, 1, 1, device=device)
     return concat_noise_label(
         fixed_noise,
-        torch.tensor([i % 10 for i in range(gen_image_num)], dtype=torch.long, device=device),
+        torch.tensor([i % 10 for i in range(num)], dtype=torch.long, device=device),
         device) if conditional else fixed_noise
 
 
