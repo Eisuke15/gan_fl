@@ -10,6 +10,7 @@ from torchvision.datasets import MNIST
 from torchvision.utils import save_image
 
 from gan import Discriminator, Generator
+from train import gen_fixed_noise, train
 
 parser = ArgumentParser()
 parser.add_argument('-e', '--nepoch', type=int, help="number of epochs to train for", default=10000)
